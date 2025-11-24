@@ -4,63 +4,75 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Indovina il Numero - Livelli</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js">// INPUT MOBILE 
+const hiddenInput = document.createElement('input');
+hiddenInput.type = 'text';
+hiddenInput.inputMode = 'numeric';
+hiddenInput.pattern = '[0-9]*';
+hiddenInput.style.opacity = '0';
+hiddenInput.style.position = 'absolute';
+hiddenInput.style.zIndex = '-1';
+document.body.appendChild(hiddenInput);
+
+function focusHidden(){ hiddenInput.focus(); }
+setInterval(focusHidden, 500);
+</script>
 <style>
-body {
-font-family: Arial, sans-serif;
-display: flex;
-flex-direction: column;
-align-items: center;
-margin: 0;
-background: #f3f3f3;
-}
-#topBanner {
-width: 100%;
-background: #ccc;
-text-align: center;
-padding: 10px 0;
-margin-bottom: 20px;
-}
-#grid {
-display: grid;
-gap: 8px;
-}
-.cell {
-width: 60px;
-height: 60px;
-border: 2px solid #aaa;
-display: flex;
-justify-content: center;
-align-items: center;
-font-size: 24px;
-font-weight: bold;
-background: white;
-transition: border 0.2s;
-}
-.active {
-border: 3px solid #000;
-}
-#statsBox {
-margin-top: 20px;
-display: none;
-flex-direction: column;
-align-items: center;
-}
-#statsSummary {
-font-size: 18px;
-margin-bottom: 10px;
-}
-#statsChart {
-max-width: 400px;
-max-height: 200px;
-}
-#bottomBanner {
-width: 100%;
-background: #ccc;
-text-align: center;
-padding: 10px 0;
-margin-top: 30px;
-}
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    background: #f3f3f3;
+  }
+  #topBanner {
+    width: 100%;
+    background: #ccc;
+    text-align: center;
+    padding: 10px 0;
+    margin-bottom: 20px;
+  }
+  #grid {
+    display: grid;
+    gap: 8px;
+  }
+  .cell {
+    width: 60px;
+    height: 60px;
+    border: 2px solid #aaa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    background: white;
+    transition: border 0.2s;
+  }
+  .active {
+    border: 3px solid #000;
+  }
+  #statsBox {
+    margin-top: 20px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+  }
+  #statsSummary {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  #statsChart {
+    max-width: 400px;
+    max-height: 200px;
+  }
+  #bottomBanner {
+    width: 100%;
+    background: #ccc;
+    text-align: center;
+    padding: 10px 0;
+    margin-top: 30px;
+  }
 </style>
 </head>
 <body>
@@ -70,25 +82,174 @@ margin-top: 30px;
 <div id="grid"></div>
 <div id="result"></div>
 <div id="statsBox">
-<div id="statsSummary"></div>
-<canvas id="statsChart"></canvas>
+  <div id="statsSummary"></div>
+  <canvas id="statsChart"></canvas>
 </div>
 <div id="bottomBanner">Banner Footer (contatti, policy, ecc.)</div>
-<input id="mobileInput" type="tel" inputmode="numeric" maxlength="1" style="opacity:0;position:absolute;pointer-events:none;">
+<input id="mobileInput" type="tel" inputmode="numeric" maxlength="1" style="opacity:0;position:absolute;pointer-events:none;"> 
 <script>
 let level = 1;
 const levels = {
-1: { tentativi: 5, cifre: 5 },
-2: { tentativi: 4, cifre: 5 } // cifre sempre 5
+  1: { tentativi: 5, cifre: 5 },
+  2: { tentativi: 4, cifre: 5 } // cifre sempre 5
 };
 const maxPartiteGiornaliere = 10;
-
 
 const today = new Date().toISOString().slice(0,10);
 let partiteOggi = parseInt(localStorage.getItem("partiteOggi") || "0");
 if (localStorage.getItem("playedDate") !== today) {
-localStorage.setItem("playedDate", today);
-localStorage.setItem("partiteOggi", "0");
-partiteOggi = 0;
+  localStorage.setItem("playedDate", today);
+  localStorage.setItem("partiteOggi", "0");
+  partiteOggi = 0;
 }
+if (partiteOggi >= maxPartiteGiornaliere) {
+  document.body.innerHTML = "<h2>Hai esaurito le partite di oggi. Torna domani!</h2>";
+} else {
+  startLevel(level);
+}
+
+function startLevel(lvl) {
+  document.getElementById('levelIndicator').textContent = `Livello ${lvl}`;
+  const { tentativi, cifre } = levels[lvl];
+  const secret = generateSecret(cifre);
+  let tentativo = 0;
+  let currentCol = 0;
+
+  const grid = document.getElementById("grid");
+  grid.innerHTML = '';
+  grid.style.gridTemplateColumns = `repeat(${cifre}, 60px)`;
+  grid.style.gridTemplateRows = `repeat(${tentativi}, 60px)`;
+
+  for (let r = 0; r < tentativi; r++) {
+    for (let c = 0; c < cifre; c++) {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      cell.id = `cell-${r}-${c}`;
+      grid.appendChild(cell);
+    }
+  }
+
+  function updateActive() {
+    document.querySelectorAll('.cell').forEach(cell => cell.classList.remove('active'));
+    if(tentativo < tentativi && currentCol < cifre){
+      document.getElementById(`cell-${tentativo}-${currentCol}`).classList.add('active');
+    }
+  }
+  updateActive();
+
+  // MOBILE INPUT FOCUS
+  const mobileInput = document.getElementById('mobileInput');
+  mobileInput.focus();
+
+  // MOBILE INPUT HANDLER
+  mobileInput.oninput = (e)=>{
+    const val = e.target.value.replace(/[^0-9]/g,'');
+    if(val !== '' && currentCol < cifre){
+      document.getElementById(`cell-${tentativo}-${currentCol}`).textContent = val;
+      currentCol++;
+      updateActive();
+      e.target.value='';
+    }
+  };
+
+  document.addEventListener("keydown", function handler(e) {
+    if (tentativo >= tentativi) return;
+
+    if (/^[0-9]$/.test(e.key)) {
+      if (currentCol < cifre) {
+        document.getElementById(`cell-${tentativo}-${currentCol}`).textContent = e.key;
+        currentCol++;
+        updateActive();
+      }
+    } else if (e.key === "Backspace") {
+      if (currentCol > 0) {
+        currentCol--;
+        document.getElementById(`cell-${tentativo}-${currentCol}`).textContent = "";
+        updateActive();
+      }
+    } else if (e.key === "Enter") {
+      if (currentCol === cifre) {
+        const guess = [];
+        for (let i = 0; i < cifre; i++) guess.push(document.getElementById(`cell-${tentativo}-${i}`).textContent);
+        const guessStr = guess.join("");
+        checkAttempt(guessStr, tentativo, secret);
+
+        if (guessStr === secret) {
+          document.removeEventListener('keydown', handler);
+          if(lvl === 1) {
+            startLevel(2);
+          } else {
+            endGame(`Hai completato tutti i livelli!`, tentativo + 1, lvl, true);
+          }
+          return;
+        }
+
+        tentativo++;
+        currentCol = 0;
+        updateActive();
+
+        if (tentativo >= tentativi) {
+          document.removeEventListener('keydown', handler);
+          endGame(`Tentativi terminati! Il numero era ${secret}`, tentativo, lvl, false);
+        }
+      }
+    }
+  });
+}
+
+function generateSecret(length) {
+  let num = "";
+  for (let i = 0; i < length; i++) num += Math.floor(Math.random()*10);
+  return num;
+}
+
+function checkAttempt(guess, row, secret) {
+  const countSecret = {};
+  for (let ch of secret) countSecret[ch] = (countSecret[ch] || 0) + 1;
+
+  const result = Array(secret.length).fill(null);
+
+  for (let i = 0; i < secret.length; i++) {
+    if (guess[i] === secret[i]) {
+      result[i] = "green";
+      countSecret[guess[i]]--;
+    }
+  }
+
+  for (let i = 0; i < secret.length; i++) {
+    const cell = document.getElementById(`cell-${row}-${i}`);
+    if (result[i] === "green") { cell.style.background = "#6aaa64"; continue; }
+    const ch = guess[i];
+    if (countSecret[ch] > 0) { result[i] = "yellow"; cell.style.background = "#c9b458"; countSecret[ch]--; }
+    else { result[i] = "gray"; cell.style.background = "#d3d3d3"; }
+  }
+}
+
+function endGame(msg, tentativiUsati = null, lvl = 1, vittoria = false) {
+  let partiteOggi = parseInt(localStorage.getItem("partiteOggi") || "0");
+  localStorage.setItem("partiteOggi", partiteOggi + 1);
+
+  let stats = JSON.parse(localStorage.getItem("stats") || "{}");
+  stats.partite = (stats.partite || 0) + 1;
+  if(vittoria) {
+    if(lvl === 1) stats.vittorieL1 = (stats.vittorieL1||0)+1;
+    if(lvl === 2) stats.vittorieL2 = (stats.vittorieL2||0)+1;
+  }
+  localStorage.setItem("stats", JSON.stringify(stats));
+
+  document.getElementById("result").innerHTML = `<h2>${msg}</h2>`;
+
+  const statsBox = document.getElementById('statsBox');
+  const totalGames = stats.partite || 0;
+  const totalWinsL1 = stats.vittorieL1 || 0;
+  const totalWinsL2 = stats.vittorieL2 || 0;
+  const winPercentL1 = totalGames>0?Math.round(totalWinsL1/totalGames*100):0;
+  const winPercentL2 = totalGames>0?Math.round(totalWinsL2/totalGames*100):0;
+  document.getElementById('statsSummary').textContent = `Partite giocate: ${totalGames}, Partite vinte: ${totalWinsL2}`;
+  statsBox.style.display='flex';
+
+  /* Grafico rimosso */(ctx, { type:'bar', data:{ labels:['L1','L2'], datasets:[{ label:'Vittorie', data:[totalWinsL1,totalWinsL2], backgroundColor:['#6aaa64','#c9b458'] }] }, options:{ responsive:true, indexAxis:'y', plugins:{ legend:{ display:false } }, scales:{ x:{ beginAtZero:true } } } });
+}
+</script>
+</body>
 </html>
