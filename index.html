@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Indovina il Numero - Livelli</title>
+<title>scopri il Numero</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js">// INPUT MOBILE 
 const hiddenInput = document.createElement('input');
 hiddenInput.type = 'text';
@@ -76,7 +76,7 @@ setInterval(focusHidden, 500);
 </style>
 </head>
 <body>
-<div id="topBanner">Banner Sponsor (futuro)</div>
+<div id="topBanner">topBanner</div>
 <h1>Indovina il Numero - Livelli</h1>
 <div id="levelIndicator"></div>
 <div id="grid"></div>
@@ -85,7 +85,7 @@ setInterval(focusHidden, 500);
   <div id="statsSummary"></div>
   <canvas id="statsChart"></canvas>
 </div>
-<div id="bottomBanner">Banner Footer (contatti, policy, ecc.)</div>
+<div id="bottomBanner">BannerFooter</div>
 <input id="mobileInput" type="tel" inputmode="numeric" maxlength="1" style="opacity:0;position:absolute;pointer-events:none;"> 
 <script>
 let level = 1;
@@ -93,7 +93,7 @@ const levels = {
   1: { tentativi: 5, cifre: 5 },
   2: { tentativi: 4, cifre: 5 } // cifre sempre 5
 };
-const maxPartiteGiornaliere = 10;
+const maxPartiteGiornaliere = 1;
 
 const today = new Date().toISOString().slice(0,10);
 let partiteOggi = parseInt(localStorage.getItem("partiteOggi") || "0");
@@ -103,7 +103,7 @@ if (localStorage.getItem("playedDate") !== today) {
   partiteOggi = 0;
 }
 if (partiteOggi >= maxPartiteGiornaliere) {
-  document.body.innerHTML = "<h2>Hai esaurito le partite di oggi. Torna domani!</h2>";
+  document.body.innerHTML = "<h2>Ottimo lavoro! Torna domani!</h2>";
 } else {
   startLevel(level);
 }
