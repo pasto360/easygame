@@ -90,18 +90,26 @@
 </style>
 </head>
 <body>
-  <div id="topBanner">Bannerup</div>
+  <div id="topBanner">BannerUp</div>
   <h1>Scopri la sequenza</h1>
   <div id="levelIndicator"></div>
   <div id="grid"></div>
 
-  <!-- tastierino numerico -->
-  <div id="keypad" aria-hidden="false">
-    <button class="key">1</button><button class="key">2</button><button class="key">3</button>
-    <button class="key">4</button><button class="key">5</button><button class="key">6</button>
-    <button class="key">7</button><button class="key">8</button><button class="key">9</button>
-    <button class="key">0</button><button id="delKey" class="key">←</button>
-  </div>
+<!-- Tastierino numerico -->
+<div id="keypad" style="display:grid;grid-template-columns:repeat(5,60px);gap:8px;margin-top:20px;">
+<button class="key">0</button>
+<button class="key">1</button>
+<button class="key">2</button>
+<button class="key">3</button>
+<button class="key">4</button>
+<button class="key">5</button>
+<button class="key">6</button>
+<button class="key">7</button>
+<button class="key">8</button>
+<button class="key">9</button>
+<button id="delKey" class="key" style="grid-column: span 2; background:#d9534f; color:white;">←</button>
+<button id="enterKey" class="key" style="grid-column: span 3; background:#5cb85c; color:white; font-weight:bold;">INVIO</button>
+</div>
 
   <div id="result"></div>
 
@@ -348,6 +356,9 @@ function setupKeypad(){
   });
   const del = document.getElementById('delKey');
   if (del) del.addEventListener('click', ()=> processKey('Backspace'));
+  // tasto INVIO del tastierino
+  const enter = document.getElementById('enterKey');
+  if (enter) enter.addEventListener('click', () => processKey('Enter'));
 }
 setupKeypad();
 
@@ -357,3 +368,4 @@ startLevel(1);
 </script>
 </body>
 </html>
+
