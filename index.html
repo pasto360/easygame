@@ -1,371 +1,314 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Scopri la sequenza</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Numero Misterioso</title>
 <style>
-  :root{ --cell-size:60px; --gap:8px; --bg:#f3f3f3; --cell-border:#aaa; }
-  body{
+  body {
     font-family: Arial, sans-serif;
-    margin:0;
-    background:var(--bg);
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    min-height:100vh;
-    padding-bottom:80px; /* spazio per footer fisso */
+    background: #f2f2f2;
+    margin: 0;
+    padding: 0;
+    text-align: center;
   }
-  #topBanner{
-    width:100%;
-    background:#ccc;
-    text-align:center;
-    padding:10px 0;
-    box-shadow:0 2px 5px rgba(0,0,0,0.12);
+
+  #top-banner,
+  #bottom-banner {
+    background: #ccc;
+    padding: 10px;
+    font-weight: bold;
   }
-  h1{ margin:14px 0; }
-  #levelIndicator{ margin-bottom:10px; font-size:18px; }
-  #grid{
-    display:grid;
-    gap:var(--gap);
-    margin-bottom:12px;
+
+  #game-container {
+    margin: 10px auto 20px;
+    max-width: 320px;
   }
-  .cell{
-    width:var(--cell-size);
-    height:var(--cell-size);
-    border:2px solid var(--cell-border);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:700;
-    font-size:24px;
-    background:white;
-    box-sizing:border-box;
-    user-select:none;
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+    margin-bottom: 10px;
   }
-  .cell.active{ border:3px solid #000; }
-  .cell.disabled{ opacity:0.6; }
-  #keypad{
-    margin-top:6px;
-    display:grid;
-    grid-template-columns:repeat(3,60px);
-    gap:10px;
-    justify-content:center;
+
+  .cell {
+    width: 100%;
+    padding-top: 100%; /* quadrata */
+    position: relative;
+    border: 2px solid #aaa;
+    background: white;
+    font-size: 24px;
+    font-weight: bold;
+    box-sizing: border-box;
   }
-  .key{
-    width:60px;
-    height:48px;
-    font-size:20px;
-    border-radius:6px;
-    border:1px solid #bbb;
-    background:white;
-    cursor:pointer;
-    user-select:none;
+
+  .cell div {
+    position: absolute;
+    top: 0; bottom: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
-  .key:active{ transform:translateY(1px); }
-  #delKey{ background:#d54d4d; color:white; grid-column:span 2; }
-  #result{ margin-top:12px; min-height:36px; }
-  #statsBox{
-    display:none;
-    margin-top:14px;
-    padding:12px;
-    background:#fff;
-    border:1px solid #ddd;
-    border-radius:6px;
-    text-align:center;
-    box-shadow:0 2px 6px rgba(0,0,0,0.06);
+
+  .active {
+    border-color: #000;
   }
-  #bottomBanner{
-    width:100%;
-    background:#ccc;
-    text-align:center;
-    padding:10px 0;
-    box-shadow:0 -2px 5px rgba(0,0,0,0.12);
-    position:fixed;
-    bottom:0;
-    left:0;
+
+  #keyboard {
+    max-width: 320px;
+    margin: 0 auto 20px auto;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
   }
-  /* disabilita selezione testo del body per tocco più pulito */
-  body, button { -webkit-tap-highlight-color: transparent; }
+
+  .key {
+    padding: 12px;
+    background: #e0e0e0;
+    border: 1px solid #888;
+    font-size: 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  #result-box {
+    margin-top: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    word-wrap: break-word;
+  }
+
 </style>
 </head>
 <body>
-  <div id="topBanner">BannerUp</div>
-  <h1>Scopri la sequenza</h1>
-  <div id="levelIndicator"></div>
-  <div id="grid"></div>
+<div id="top-banner">SPONSOR</div>
 
-<!-- Tastierino numerico -->
-<div id="keypad" style="display:grid;grid-template-columns:repeat(5,60px);gap:8px;margin-top:20px;">
-<button class="key">0</button>
-<button class="key">1</button>
-<button class="key">2</button>
-<button class="key">3</button>
-<button class="key">4</button>
-<button class="key">5</button>
-<button class="key">6</button>
-<button class="key">7</button>
-<button class="key">8</button>
-<button class="key">9</button>
-<button id="delKey" class="key" style="grid-column: span 2; background:#d9534f; color:white;">←</button>
-<button id="enterKey" class="key" style="grid-column: span 3; background:#5cb85c; color:white; font-weight:bold;">INVIO</button>
-</div>
+<h2>Numero Misterioso</h2>
+<div id="game-container"></div>
+<div id="keyboard"></div>
+<div id="result-box"></div>
+<button id="shareBtn" style="display:none; margin-top:10px; padding:8px 12px; font-size:16px; border-radius:6px; border:none; background:#25D366; color:white; cursor:pointer;">
+  📲 Condividi su WhatsApp
+</button>
 
-  <div id="result"></div>
 
-  <div id="statsBox">
-    <div id="statsSummary"></div>
-  </div>
-
-  <div id="bottomBanner">BannerFooter</div>
+<div id="bottom-banner">CONTATTI • POLICY • INFO</div>
 
 <script>
-/* ---------------- CONFIG ---------------- */
-const maxPartiteGiornaliere = 1; // cambiarlo per test
-/* ---------------------------------------- */
+let level = 1;
+let tentativiMax = {1: 5, 2: 4};
+let tentativo = 0;
+let guess = "";
+let secret1 = genSecret();
+let secret2 = genSecret();
+let secret = secret1;
+let gameOver = false;
+let activeRow = 0;
+let activeCol = 0;
 
-const levels = {
-  1: { tentativi: 5, cifre: 5 },
-  2: { tentativi: 4, cifre: 5 } // cifre sempre 5 per entrambi i livelli
-};
-
-const todayKey = () => new Date().toISOString().slice(0,10);
-if (localStorage.getItem('playedDate') !== todayKey()) {
-  localStorage.setItem('playedDate', todayKey());
-  localStorage.setItem('partiteOggi', '0');
-}
-let partiteOggi = parseInt(localStorage.getItem('partiteOggi') || '0');
-if (partiteOggi >= maxPartiteGiornaliere){
-  document.body.innerHTML = '<h2 style="padding:20px;">per oggi può bastare, torna domani!</h2>';
-  throw new Error('Partite giornaliere esaurite');
+function genSecret() {
+  let n = "";
+  for (let i = 0; i < 5; i++) n += Math.floor(Math.random() * 10);
+  return n;
 }
 
-/* stato di gioco globale (usato da processKey) */
-const current = {
-  lvl: 1,
-  tentativi: 0,
-  cifre: 0,
-  secret: '',
-  tentativo: 0,
-  currentCol: 0,
-  active: false
-};
+function buildGrid() {
+  const container = document.getElementById("game-container");
+  container.innerHTML = "";
 
-/* helper: genera numero segreto */
-function generateSecret(len){
-  let s = '';
-  for (let i=0;i<len;i++) s += Math.floor(Math.random()*10);
-  return s;
-}
-
-/* costruisce la griglia per il livello corrente e imposta stato */
-function startLevel(lvl){
-  current.lvl = lvl;
-  const cfg = levels[lvl];
-  current.tentativi = cfg.tentativi;
-  current.cifre = cfg.cifre;
-  current.secret = generateSecret(cfg.cifre);
-  current.tentativo = 0;
-  current.currentCol = 0;
-  current.active = true;
-
-  // UI
-  document.getElementById('levelIndicator').textContent = `🎲 Livello ${lvl}`;
-  document.getElementById('result').innerHTML = '';
-  document.getElementById('statsBox').style.display = 'none';
-
-  const grid = document.getElementById('grid');
-  grid.innerHTML = '';
-  grid.style.gridTemplateColumns = `repeat(${current.cifre}, ${getComputedStyle(document.documentElement).getPropertyValue('--cell-size') || '60px'})`;
-  grid.style.gridTemplateRows = `repeat(${current.tentativi}, ${getComputedStyle(document.documentElement).getPropertyValue('--cell-size') || '60px'})`;
-
-  for (let r = 0; r < current.tentativi; r++){
-    for (let c = 0; c < current.cifre; c++){
-      const cell = document.createElement('div');
-      cell.className = 'cell';
+  for (let r = 0; r < tentativiMax[level]; r++) {
+    const row = document.createElement("div");
+    row.className = "grid";
+    for (let c = 0; c < 5; c++) {
+      const cell = document.createElement("div");
+      cell.className = "cell";
       cell.id = `cell-${r}-${c}`;
-      grid.appendChild(cell);
+      const inner = document.createElement("div");
+      cell.appendChild(inner);
+      row.appendChild(cell);
     }
+    container.appendChild(row);
   }
-  updateActive();
+  highlightActive();
 }
 
-/* evidenzia la cella corrente */
-function updateActive(){
-  document.querySelectorAll('.cell').forEach(el => el.classList.remove('active'));
-  if (!current.active) return;
-  if (current.tentativo < current.tentativi && current.currentCol < current.cifre){
-    const el = document.getElementById(`cell-${current.tentativo}-${current.currentCol}`);
+function highlightActive() {
+  document.querySelectorAll('.cell').forEach(c => c.classList.remove('active'));
+  if (!gameOver) {
+    const el = document.getElementById(`cell-${activeRow}-${activeCol}`);
     if (el) el.classList.add('active');
   }
 }
 
-/* logica di controllo tentativo con regola duplicati corretta */
-function checkAttempt(guess, row, secret){
-  // conta occorrenze nel segreto
-  const countSecret = {};
-  for (let ch of secret) countSecret[ch] = (countSecret[ch]||0) + 1;
+function buildKeyboard() {
+  const kb = document.getElementById("keyboard");
+  kb.innerHTML = "";
+  const keys = [0,1,2,3,4,5,6,7,8,9];
+  keys.forEach(k => addKey(k));
+  addKey("⌫", "delete");
+  addKey("⏎", "enter");
+}
 
-  const result = Array(current.cifre).fill(null);
+function addKey(label, type="num") {
+  const k = document.createElement("button");
+  k.className = "key";
+  k.textContent = label;
+  k.onclick = () => handleKey(type === "num" ? label : type);
+  document.getElementById("keyboard").appendChild(k);
+}
 
-  // primi verdi
-  for (let i=0;i<current.cifre;i++){
+function handleKey(key) {
+  if (gameOver) return;
+
+  if (!isNaN(key)) {
+    if (activeCol < 5) {
+      document.getElementById(`cell-${activeRow}-${activeCol}`).firstChild.textContent = key;
+      guess += key;
+      activeCol++;
+      highlightActive();
+    }
+    return;
+  }
+
+  if (key === "delete") {
+    if (activeCol > 0) {
+      activeCol--;
+      guess = guess.slice(0, -1);
+      document.getElementById(`cell-${activeRow}-${activeCol}`).firstChild.textContent = "";
+      highlightActive();
+    }
+    return;
+  }
+
+  if (key === "enter") submitGuess();
+}
+
+function submitGuess() {
+  if (guess.length < 5) return;
+  checkAttempt();
+
+  tentativo++;
+
+  if (guess === secret) {
+    endLevelSuccess();
+    return;
+  }
+
+  if (tentativo >= tentativiMax[level]) {
+    endLevelFail();
+    return;
+  }
+
+  activeRow++;
+  activeCol = 0;
+  guess = "";
+  highlightActive();
+}
+
+function checkAttempt() {
+  const count = {};
+  for (let ch of secret) count[ch] = (count[ch]||0)+1;
+
+  const result = Array(5).fill("red");
+
+  for (let i = 0; i < 5; i++) {
     if (guess[i] === secret[i]) {
-      result[i] = 'green';
-      countSecret[guess[i]]--;
+      result[i] = "green";
+      count[guess[i]]--;
     }
   }
-  // poi gialli/grigi
-  for (let i=0;i<current.cifre;i++){
-    const cell = document.getElementById(`cell-${row}-${i}`);
-    if (!cell) continue;
-    if (result[i] === 'green') { cell.style.background = '#6aaa64'; continue; }
-    const ch = guess[i] || '';
-    if (countSecret[ch] > 0) {
-      result[i] = 'yellow';
-      cell.style.background = '#c9b458';
-      countSecret[ch]--;
-    } else {
-      result[i] = 'gray';
-      cell.style.background = '#d3d3d3';
-    }
-  }
-}
 
-/* PROCESS KEY: chiamata sia da tastiera fisica sia dal tastierino */
-function processKey(key){
-  if (!current.active) return;
-
-  // Numeri
-  if (/^[0-9]$/.test(key)){
-    if (current.currentCol < current.cifre){
-      const cell = document.getElementById(`cell-${current.tentativo}-${current.currentCol}`);
-      if (cell) cell.textContent = key;
-      current.currentCol++;
-      updateActive();
-    }
-    return;
-  }
-
-  // Backspace
-  if (key === 'Backspace'){
-    if (current.currentCol > 0){
-      current.currentCol--;
-      const cell = document.getElementById(`cell-${current.tentativo}-${current.currentCol}`);
-      if (cell) cell.textContent = '';
-      updateActive();
-    }
-    return;
-  }
-
-  // Enter => invia tentativo
-  if (key === 'Enter'){
-    if (current.currentCol !== current.cifre) return; // non completo
-    const guessArr = [];
-    for (let i=0;i<current.cifre;i++){
-      const cell = document.getElementById(`cell-${current.tentativo}-${i}`);
-      guessArr.push(cell ? (cell.textContent || '') : '');
-    }
-    const guessStr = guessArr.join('');
-    checkAttempt(guessStr, current.tentativo, current.secret);
-
-    // se vinto
-    if (guessStr === current.secret){
-      // se siamo a livello 1 → avvia livello 2; se siamo a livello 2 → vittoria totale
-      if (current.lvl === 1){
-        // small delay per far vedere colore prima di cambiare livello
-        current.active = false;
-        setTimeout(()=> startLevel(2), 450);
-      } else {
-        current.active = false;
-        setTimeout(()=> endGame('Hai completato tutti i livelli!', current.tentativo + 1, current.lvl, true), 450);
+  for (let i = 0; i < 5; i++) {
+    if (result[i] !== "green") {
+      if (count[guess[i]] > 0) {
+        result[i] = "yellow";
+        count[guess[i]]--;
       }
-      return;
     }
+  }
 
-    // non vinto: passa al tentativo successivo
-    current.tentativo++;
-    current.currentCol = 0;
-    updateActive();
-
-    if (current.tentativo >= current.tentativi){
-      current.active = false;
-      setTimeout(()=> endGame(`Tentativi terminati! Il numero era ${current.secret}`, current.tentativo, current.lvl, false), 450);
-    }
-    return;
+  for (let i = 0; i < 5; i++) {
+    const cell = document.getElementById(`cell-${activeRow}-${i}`);
+    cell.style.background = result[i] === "green" ? "#6aaa64" :
+                           result[i] === "yellow" ? "#c9b458" : "#d3d3d3";
   }
 }
 
-/* ENDGAME: aggiorna statistiche e mostra messaggio (vittoria contata solo se lvl===2 e vittoria===true) */
-function endGame(msg, tentativiUsati = null, lvl = 1, vittoria = false){
-  // aggiorna partite oggi
-  let partiteOggi = parseInt(localStorage.getItem('partiteOggi') || '0');
-  partiteOggi++;
-  localStorage.setItem('partiteOggi', String(partiteOggi));
+let resultL1 = null;
+let resultL2 = null;
 
-  // stats globali
-  let stats = JSON.parse(localStorage.getItem('stats') || '{}');
-  stats.partite = (stats.partite || 0) + 1;
-
-  // conteggia vittorie solo se si supera il livello 2 (vittoria === true e lvl===2)
-  if (vittoria && lvl === 2){
-    stats.vittorie = (stats.vittorie || 0) + 1;
-  }
-
-  localStorage.setItem('stats', JSON.stringify(stats));
-
-  // mostra messaggio e statistiche
-  document.getElementById('result').innerHTML = `<h2>${msg}</h2>`;
-  const statsBox = document.getElementById('statsBox');
-  const totalGames = stats.partite || 0;
-  const totalWins = stats.vittorie || 0;
-  document.getElementById('statsSummary').textContent = `Partite giocate🕹️: ${totalGames} — Partite vinte🏆: ${totalWins}`;
-  statsBox.style.display = 'block';
-
-  // disattiva input
-  current.active = false;
-  // evidenzia griglia come disabilitata
-  document.querySelectorAll('.cell').forEach(c => c.classList.add('disabled'));
-
-  // mostra scritta "torna domani" se esaurite le partite
-  if (parseInt(localStorage.getItem('partiteOggi') || '0') >= maxPartiteGiornaliere){
-    const note = document.createElement('div');
-    note.style.marginTop = '8px';
-    note.style.color = '#555';
-    note.textContent = 'Hai usato le partite di oggi — torna domani per giocare ancora.';
-    statsBox.appendChild(note);
+function endLevelSuccess() {
+  if (level === 1) {
+    resultL1 = tentativo + 1;
+    level = 2;
+    secret = secret2;
+    tentativo = 0;
+    guess = "";
+    activeRow = 0;
+    activeCol = 0;
+    buildGrid();
+    highlightActive();
+  } else {
+    resultL2 = tentativo + 1;
+    endGame(true);
   }
 }
 
-/* listener tastiera fisica (una sola volta) */
-window.addEventListener('keydown', (ev) => {
-  // preveniamo comportamenti indesiderati quando input focus è su campi esterni
-  const tag = (document.activeElement && document.activeElement.tagName) || '';
-  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-  processKey(ev.key);
+function endLevelFail() {
+  if (level === 1) {
+    resultL1 = "❌";
+    resultL2 = "❌";
+    endGame(false);
+  } else {
+    resultL2 = "❌";
+    endGame(false);
+  }
+}
+
+function endGame(vittoria) {
+  gameOver = true;
+
+  const stats = JSON.parse(localStorage.getItem("stats") || "{\"partite\":0,\"vittorie\":0}");
+  stats.partite++;
+  if (vittoria) stats.vittorie++;
+  localStorage.setItem("stats", JSON.stringify(stats));
+
+  const box = document.getElementById("result-box");
+  box.innerHTML = `<br><b>Risultato:</b><br>
+                 1️⃣-${resultL1} &nbsp;&nbsp; 2️⃣-${resultL2}<br><br>
+                 <b>Partite giocate:</b> ${stats.partite}<br>
+                 <b>Partite vinte:</b> ${stats.vittorie}`;
+
+// Mostra il pulsante WhatsApp
+document.getElementById("shareBtn").style.display = "inline-block";
+}
+
+buildGrid();
+buildKeyboard();
+// Aggiungi questo listener alla fine del tuo script:
+document.addEventListener("keydown", (e) => {
+  if (gameOver) return;
+
+  if (/^[0-9]$/.test(e.key)) {
+    handleKey(e.key);
+  } else if (e.key === "Backspace") {
+    handleKey("delete");
+  } else if (e.key === "Enter") {
+    handleKey("enter");
+  }
 });
+document.getElementById("shareBtn").onclick = () => {
+  if (!resultL1 && !resultL2) return;
 
-/* setup tastierino numerico (bottone) */
-function setupKeypad(){
-  document.querySelectorAll('#keypad .key').forEach(btn => {
-    btn.addEventListener('click', ()=> {
-      const v = btn.textContent.trim();
-      if (/^[0-9]$/.test(v)) processKey(v);
-      // delete handled below
-    });
-  });
-  const del = document.getElementById('delKey');
-  if (del) del.addEventListener('click', ()=> processKey('Backspace'));
-  // tasto INVIO del tastierino
-  const enter = document.getElementById('enterKey');
-  if (enter) enter.addEventListener('click', () => processKey('Enter'));
-}
-setupKeypad();
+  let text = `Ho giocato a Numero Misterioso!\nRisultato:\n1️⃣-${resultL1}  2️⃣-${resultL2}`;
+  text = encodeURIComponent(text);
+  const url = `https://wa.me/?text=${text}`;
+  window.open(url, "_blank");
+};
 
-/* avvia gioco (livello 1) */
-startLevel(1);
 
 </script>
 </body>
 </html>
-
