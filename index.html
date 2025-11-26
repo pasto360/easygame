@@ -134,7 +134,7 @@ let secret2 = null;
 let secret = null;   // si inizializza, ma NON si assegna ancora
 let gameDate = "";
 
-fetch("https://github.com/pasto360/easygam/numero_giornaliero.php")
+fetch("https://github.com/pasto360/easygame/numero_giornaliero.php")
   .then(r => r.json())
   .then(data => {
       secret1 = data.num1;
@@ -362,4 +362,5 @@ document.getElementById("shareBtn").onclick = () => {
 </script>
 </body>
 </html>
+
 
