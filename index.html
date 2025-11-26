@@ -83,13 +83,13 @@
 </style>
 </head>
 <body>
-<div id="top-banner">SPONSOR</div>
+<div id="top-banner">topbanner</div>
 
 <h2>Numero Misterioso</h2>
 <div id="game-container"></div>
 <div id="keyboard"></div>
 <div id="result-box"></div>
-<button id="shareBtn" style="display:none; margin-top:10px; padding:8px 12px; font-size:16px; border-radius:6px; border:none; background:#25D366; color:white; cursor:pointer;">
+<button id="shareBtn" style="display:none; margin-top:10px; padding:8px 12px; font-size:12px; border-radius:3px; border:none; background:#25D366; color:white; cursor:pointer;">
   📲 Condividi su WhatsApp
 </button>
 
@@ -101,9 +101,54 @@ let level = 1;
 let tentativiMax = {1: 5, 2: 4};
 let tentativo = 0;
 let guess = "";
-let secret1 = genSecret();
-let secret2 = genSecret();
-let secret = secret1;
+// DUE NUMERI GIORNALIERI PER LIVELLO 1 E LIVELLO 2
+function generate5Digit() {
+    let n = "";
+    for (let i = 0; i < 5; i++) {
+        n += Math.floor(Math.random() * 10);
+    }
+    return n;
+}
+
+function getDailyNumbers() {
+    const today = new Date().toISOString().slice(0, 10);
+
+    let savedDay = localStorage.getItem("dailyDay");
+    let num1 = localStorage.getItem("dailyNumber1");
+    let num2 = localStorage.getItem("dailyNumber2");
+
+    // Nuovo giorno → genera 2 nuovi numeri
+    if (savedDay !== today || !num1 || !num2) {
+        num1 = generate5Digit();
+        num2 = generate5Digit();
+        localStorage.setItem("dailyDay", today);
+        localStorage.setItem("dailyNumber1", num1);
+        localStorage.setItem("dailyNumber2", num2);
+    }
+
+    return { num1, num2 };
+}
+
+let secret1 = null;
+let secret2 = null;
+let secret = null;   // si inizializza, ma NON si assegna ancora
+let gameDate = "";
+
+fetch("\https://github.com/pasto360/easygam/numero_giornaliero.php")
+  .then(r => r.json())
+  .then(data => {
+      secret1 = data.num1;
+      secret2 = data.num2;
+      gameDate = data.date;   // <-- AGGIUNTO
+      secret = secret1;
+
+      console.log("Numero del giorno livello 1:", secret1);
+      console.log("Numero del giorno livello 2:", secret2);
+
+      buildGrid();
+      buildKeyboard();
+  });
+
 let gameOver = false;
 let activeRow = 0;
 let activeCol = 0;
@@ -278,16 +323,16 @@ function endGame(vittoria) {
   const box = document.getElementById("result-box");
   box.innerHTML = `<br><b>Risultato:</b><br>
                  1️⃣-${resultL1} &nbsp;&nbsp; 2️⃣-${resultL2}<br><br>
-                 <b>Partite giocate:</b> ${stats.partite}<br>
-                 <b>Partite vinte:</b> ${stats.vittorie}`;
+                 <b>Partite giocate 🕹️:</b> ${stats.partite}<br>
+                 <b>Partite vinte 🏆:</b> ${stats.vittorie}`;
 
-// Mostra il pulsante WhatsApp
+// WhatsApp
 document.getElementById("shareBtn").style.display = "inline-block";
 }
 
 buildGrid();
 buildKeyboard();
-// Aggiungi questo listener alla fine del tuo script:
+// condivisione:
 document.addEventListener("keydown", (e) => {
   if (gameOver) return;
 
@@ -302,7 +347,12 @@ document.addEventListener("keydown", (e) => {
 document.getElementById("shareBtn").onclick = () => {
   if (!resultL1 && !resultL2) return;
 
-  let text = `Ho giocato a Numero Misterioso!\nRisultato:\n1️⃣-${resultL1}  2️⃣-${resultL2}`;
+  let text = 
+    `📅 Gioco del ${gameDate}\n` +
+    `Risultato:\n` +
+    `1️⃣-${resultL1}   (numero: ${secret1})\n` +
+    `2️⃣-${resultL2}   (numero: ${secret2})`;
+
   text = encodeURIComponent(text);
   const url = `https://wa.me/?text=${text}`;
   window.open(url, "_blank");
